@@ -8,3 +8,6 @@ uptime
 
 printf '\nDisk usage:\n'
 df -h /
+
+printf '\nMemory:\n'
+free -h
