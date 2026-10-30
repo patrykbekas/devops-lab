@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-THRESHOLD=80
+THRESHOLD="${THRESHOLD:-80}"
 
-df -h /
+USAGE=$(df -P / | awk 'NR == 2 {gsub(/%/, "", $5); print $5}')
 
-echo "Warning threshold: ${THRESHOLD}%"
+echo "Filesystem /: ${USAGE}% used (threshold: ${THRESHOLD}%)"
+
+if (( USAGE >= THRESHOLD )); then
+    echo "WARNING: disk usage has reached the threshold"
+else
+    echo "OK: disk usage below the threshold"
+fi
