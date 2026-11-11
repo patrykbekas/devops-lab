@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Ustaw haslo w pliku .env}
+
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nextcloud -d nextcloud"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  nc:
+    image: nextcloud:apache
+    restart: unless-stopped
+
+    ports:
+      - "8082:80"
+
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_DB: nextcloud
+      POSTGRES_USER: nextcloud
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Ustaw haslo w pliku .env}
+      NEXTCLOUD_TRUSTED_DOMAINS: ${NEXTCLOUD_TRUSTED_DOMAINS:-localhost}
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    volumes:
+      - nc_data:/var/www/html
+
+volumes:
+  db_data:
+  nc_data:
